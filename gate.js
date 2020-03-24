@@ -25,7 +25,7 @@ const commandKeywords = {
 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '`', '1',
 '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '[', ']', '\\', ';',
 '\'', ',', '.', '/', 'tab', 'space', 'left', 'right', 'down', 'up', 'windows',
-'win', 'ctrl', 'alt', 'shift', 'del', 'delete', 'backspace',
+'win', 'ctrl', 'alt', 'shift', 'del', 'delete', 'backspace', 'enter',
 'pgup', 'pageup', 'pgdn', 'pgdown', 'pagedown', 'control', 'esc'],
     mouseClick: ['leftclick', 'click', 'rightclick'],
     mouseTo: ['to'],
@@ -66,6 +66,7 @@ const verifyCommand = {
             throw new Error('Cannot ask for more than two ' +
                 'simulatneous clicks.');
         }
+
         let invalidArgs = 
             usArgs.filter(a => !commandKeywords.mouseClick.includes(a));
 
@@ -82,29 +83,29 @@ const verifyCommand = {
             throw new Error('Too many coordinates (specify exactly two)');
         }
 
-        let destination = parseCoordinates(usArgs[1], usArgs[2]);
+        let dest = parseCoordinates(usArgs[1], usArgs[2]);
 
-        if (isOutOfBounds(destination[0], destination[1])) {
-            throw new Error(`Cannot move mouse to (${destination[0]}, ` +
-                `${destination[1]}), since it is outside the screen.`);
+        if (isOutOfBounds(pOriginX + dest[0], pOriginY + dest[1])) {
+            throw new Error(`Cannot move mouse to (${dest[0]}, ` +
+                `${dest[1]}), since it is outside the screen.`);
         }
     },
     mouseMove: function(usArgs) {
         if (usArgs.length < 3) {
-            throw new Error('A minimum of two coordinates are needed to .' +
+            throw new Error('A minimum of two coordinates are needed to ' +
                 'move the mouse.');
         } else if (usArgs.length > 3) {
             throw new Error('Too many offsets (specify exactly two)');
         }
 
-        let offset = parseCoordinates(usArgs[1], usArgs[2]);
-        let currMousePos = Robot.getMousePos();
-        let destination = [offset[0] + currMousePos.x,  
+        const offset = parseCoordinates(usArgs[1], usArgs[2]);
+        const currMousePos = Robot.getMousePos();
+        const dest = [offset[0] + currMousePos.x,  
             offset[1] + currMousePos.y];
 
-        if (isOutOfBounds(destination[0], destination[1])) {
-            throw new Error(`Cannot move mouse to (${destination[0]}, `
-                + `${destination[1]}), since it is outside the screen.`);
+        if (isOutOfBounds(pOriginX + dest[0], pOriginY + dest[1])) {
+            throw new Error(`Cannot move mouse to (${dest[0]}, `
+                + `${dest[1]}), since it is outside the screen.`);
         }
     }
 }
@@ -125,28 +126,34 @@ function parseCoordinates(usX, usY) {
 
 const executeCommand = {
     key: function(sArgs, idUser) {
+        sArgs = sArgs.map(arg => reduce(arg));
+        console.log(sArgs);
         modifiers = sArgs.filter(arg => modifyingKeys.includes(arg));
         keys = sArgs.filter(arg => !modifyingKeys.includes(arg));
-        keys.map(key => {
+        keys.forEach(key => {
             Robot.keyTap(key, modifiers)
         });
     },
     mouseClick: function(sArgs, idUser) {
         doDoubleClick = sArgs.length > 1;
-        switch (arg) {
+        switch (sArgs[0]) {
           case 'leftclick':
           case 'click':
-            Robot.mouseClick(left, doDoubleClick);
+            Robot.mouseClick('left', doDoubleClick);
+            break;
           case 'rightclick':
-            Robot.mouseClick(right, doDoubleClick);
+            Robot.mouseClick('right', doDoubleClick);
+            break;
         }
     },
     mouseTo: function(sArgs, idUser) {
-        Robot.moveMouse(parseInt(sArgs[1], 10), parseInt(sArgs[2], 10));
+        Robot.moveMouse(pOriginX + parseInt(sArgs[1], 10), 
+            pOriginY + parseInt(sArgs[2], 10));
     },
     mouseMove: function(sArgs, idUser) {
-        currMousePos = getMousePos();
-        Robot.moveMouse(currMousePos.x + sArgs[1], currMousePos.y + sArgs[2]);
+        currMousePos = Robot.getMousePos();
+        Robot.moveMouse(currMousePos.x + parseInt(sArgs[1], 10), 
+            currMousePos.y + parseInt(sArgs[2]));
     }
 }
 
@@ -174,7 +181,6 @@ client.on('message', message => {
         } catch (e) {
             notifyFailure(
                 message.content, message.author, e.message, message.channel);
-            log(`Command ${message.content} by ${message.author.name} failed.`);
         }
     } else {
         log(`caught message not in ${nameControlChannel}; ignoring.`);
@@ -208,13 +214,13 @@ function getCommandType(usArgs) {
 
 // Send a message notifying failure of a command.
 function notifyFailure(usCommand, dsUser, msg, dsChannel) {
-    dsChannel.send(`${dsUser.username} failed. \`${usCommand}\` is not ` + 
-        `an acceptable command: \`${msg}\``);
+    dsChannel.send(`Error on \`${usCommand}\`: ${msg}`);
 }
 
 // Returns if the given position is outside the bounds of the vm screen.
 function isOutOfBounds(px, py) {
-    return px < 0 || py < 0 || px > vmWidth || py > vmHeight;
+    return px < pOriginX  || py < pOriginY || 
+        px > (vmWidth + pOriginX) || py > (vmHeight + pOriginY);
 }
 
 // Mark a user as a participant of the game.
