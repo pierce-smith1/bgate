@@ -71,7 +71,7 @@ keys can also be pressed by sending these commands:
 - `down`
 - `up`
 - `windows` | `super`
-- `ctrl`
+- `ctrl` | `control`
 - `alt`
 - `shift`
 - `capslock`
@@ -79,6 +79,8 @@ keys can also be pressed by sending these commands:
 - `backspace`
 - `pgup` | `pageup`
 - `pgdn` | `pgdown` | `pagedown`
+- `enter`
+- `escape` | `esc`
 
 To press multiple keys at the same time, include each key in a space or `+`
 separated list. For example, to press ctrl+s, send `ctrl s` or `ctrl+s` (or even

@@ -34,15 +34,16 @@ The following special words are recognized as unique keys by the Gate:
 - `right`
 - `down`
 - `up`
-- `windows` | `super`
-- `ctrl`
+- `windows` | `win`
+- `ctrl` | `control`
 - `alt`
 - `shift`
-- `capslock`
 - `del` | `delete`
 - `backspace`
 - `pgup` | `pageup`
 - `pgdn` | `pgdown` | `pagedown`
+- `enter`
+- `escape` | `esc`
 
 They can also be used in multi-key sequences:
 
@@ -53,7 +54,8 @@ They can also be used in multi-key sequences:
 You will also send messages to control the mouse.
 
 Send `click` or `leftclick` to use the left mouse button. Send `rightclick` to
-use the right mouse button.
+use the right mouse button. Send either twice in the same message to double
+click.
 
 Send `to x y` to *transport* the mouse to a specific location. This location is
 measured in pixels, relative to the bottom left corner of the screen. If the

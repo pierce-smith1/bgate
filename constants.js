@@ -1,0 +1,22 @@
+module.exports = {
+    specialKeys = ['tab',
+    'space',
+    'left',
+    'right',
+    'down',
+    'up',
+    'windows',
+    'super',
+    'ctrl',
+    'alt',
+    'shift',
+    'capslock',
+    'del',
+    'delete',
+    'backspace',
+    'pgup',
+    'pageup',
+    'pgdn',
+    'pgdown',
+    'pagedown']
+}
