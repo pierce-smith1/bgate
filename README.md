@@ -1,32 +1,79 @@
 # The Billy Gate
 
-The Billy Gate opens a world of lies. The Window will show you his deception.
+The Stratzenblitz Discord's official April Fools 2020 event.
 
-## Usage
+## Summary
 
-You must enter the `#gate-control` channel to control the Billy Gate. All
-messages in this channel will be interpreted as commands. For regular human
-discussion, the `#gate-chat` channel is provided to you.
+Users on the Stratzenblitz Discord, for 7 days starting at 4:00 am UTC on April
+1st, 2020, will gain access to a category of channels labelled `THE BILLY GATE`.
+Through these channels, users will be able to control a virtual machine running
+Windows XP SP2 (a.k.a the "vm") by inputting commands read by a bot (a.k.a the
+"gatebot"). Users will have full mouse and keyboard control of the machine
+through these commands, but they will be limited in the amount of commands they
+are able to input in a certain time frame.
 
-You may control the mouse and keyboard of the Gate. This will now be explained.
+This virtual machine will be streamed by a separate account (a.k.a. the
+"streamer"), so users can see their actions take place.
 
-### Seize The Keyboard
+## Discord Channels
 
-To control the keyboard, send a message containing the name of the key you wish
-to press. For instance, should I send the message
+Three channels will be added to the server, each placed in a new category
+labelled `THE BILLY GATE`. These channels will be publicly accessible to all
+Members.
 
-`a`
+- #gate-chat: For discussion about the Gate. We provide this as a space for
+  people to coordinate activities if they wish. The bot will NOT read messages
+  in this channel.
+- #gate-control: The channel by which the users can control the VM. **EVERY
+  MESSAGE SENT IN THIS CHANNEL WILL BE INTERPRETED AS A COMMAND BY THE
+  GATEBOT.** There is no prefix necessary to get the gatebot's attention.
+- The Gate: The voice channel through which the streamer will stream the virtual
+  machine. Full voice chat and streaming capabilities will remain open to all
+  users in the channel, but the streamer should not be muted.
 
-The a key would be pressed in the Gate. To press multiple keys at once, write
-each of the keys you wish to press as a space or plus-separated list, as such:
+## Interaction
 
-`s n p`
+Users will interact with the Billy Gate through the `#gate-control` channel.
+Every message sent in this channel is interpreted as a command to the gatebot.
 
-or
+Users are allowed five commands every thirty seconds. Each command is one of the
+following:
 
-`s+n+p`
+- Pressing a single key on the vm's keyboard
+- Moving the mouse to a space on the vm
+- Clicking the mouse in the vm
 
-The following special words are recognized as unique keys by the Gate:
+After a successful command is sent, the gatebot will process the command.  If an
+unsuccessful command is sent, the gatebot will respond, citing the command that
+was attempted, the user that requested it, and why it failed. (Some reasons a
+command might fail are invalid syntax, insufficient command allowance, invalid
+arguments, etc.)
+
+### Command philosophy
+
+Commands should be intuitive and verbose. It should be obvious, or at least
+difficult to forget, how to invoke certain keys and use the mouse. Keep in mind
+we are targeting an audience that may not be technically sophisticated, so we do
+not rely on specific intuition that only savvy users may understand (like ^C for
+ctrl shortcuts, bot prefixes, etc). Thus, commands are kept prefix-less and in
+verbose English.
+
+### Keyboard interaction
+
+There are two basic modes of keyboard interaction - *typing* and *comboing*.
+Multiple modes can be used in the same message, and the gatebot will
+intelligently determine which mode is desired by examining the syntax of the
+message.
+
+#### Typing mode
+
+The simplest mode is typing mode. In this mode, the gatebot takes its input and
+interprets it as a literal string, typing each character in the string to the
+keyboard in sequence. All characters are preserved, including spaces. For
+instance, if the gatebot receives the message "hello world ", it will type `h`
+`e` `l` `l` `o` ` ` `w` `o` `r` `l` `d` ` `, preserving all of the spaces.
+
+Typing mode can be interrupted by one of the following special keywords:
 
 - `tab`
 - `space`
@@ -34,7 +81,7 @@ The following special words are recognized as unique keys by the Gate:
 - `right`
 - `down`
 - `up`
-- `windows` | `win`
+- `windows` | `win` 
 - `ctrl` | `control`
 - `alt`
 - `shift`
@@ -45,43 +92,93 @@ The following special words are recognized as unique keys by the Gate:
 - `enter`
 - `escape` | `esc`
 
-They can also be used in multi-key sequences:
+If one of these are encountered, the gatebot will press the corresponding key
+(i.e. the "escape" key for `esc`) instead of typing out the sequence of
+characters. The gatebot will only interpret these special codes if they appear
+on their own as a complete token; for instance, "deleteme" will simply type out
+`d` `e` `l` `e` `t` `e` `m` `e`, but "delete me" will press the delete key and
+then type `m` `e`.
 
-`shift+a+del`
+The following keywords will also interrupt typing mode by invoking mouse
+interaction:
 
-### Seize The Mouse
+- `click` | `leftclick`
+- `rightclick`
+- `to`
+- `move`
+- `drag`
 
-You will also send messages to control the mouse.
+These will not press keys on the keyboard at all.
 
-Send `click` or `leftclick` to use the left mouse button. Send `rightclick` to
-use the right mouse button. Send either twice in the same message to double
-click.
+To type out one of these special words without it being re-interpreted, preface
+the command with `type`. If a command begins with `type`, typing mode stays on
+for the rest of the command and it cannot be interrupted by special sequences.
+For instance, `type pgup click` presses `p` `g` `u` `p` ` ` `c` `l` `i` `c` `k`
+instead of pressing pageup and clicking the mouse.
 
-Send `to x y` to *transport* the mouse to a specific location. This location is
-measured in pixels, relative to the bottom left corner of the screen. If the
-location you wish to send the mouse to is out of the bounds of the Gate's
-screen, you have failed.
+#### Combo mode
 
-Send `move x y` to *push* the mouse by a certain amount. `x` and `y` are
-measured in pixels. Positive `x` moves the mouse right, negative `x` moves it
-left. Positive `y` moves the mouse up, negative `y` moves it down. Again, should
-the mouse leave the screen of the Gate, you have failed.
+Combo mode allows multiple keys to be pressed at the same time.
 
-### Command Is Limited
+Combo mode is invoked with a `+` separated list of keys. At least one of the
+keys must be a *modifier* key, which is one of the following: 
 
-You may only send five commands every thirty seconds. Should you attempt to send
-more, you shall be shamed, and your entire query will fail.
+- `shift`
+- `alt`
+- `windows` | `win`
+- `ctrl` | `control`
 
-### You Are Undirected
+The other keys must be standard keyboard keys, such as `a`, `0`, `.`, etc, OR
+click keywords, such as `click` and `rightclick` .
 
-If you must ask what to do in the Gate, you have already lost your way. The Gate
-is for you to explore. Forge your own path.
+We define a *combo query* as one of these complete lists. Some combo queries
+could be `ctrl+s` or `ctrl+shift+escape` or `z+alt` or even `ctrl+click`. When
+the gatebot recognizes a combo query, it interrupts typing mode. It then holds
+the given modifier key while pressing (or clicking) the other standard keys.
 
-The Gate will remain open until an undetermined time in the future. If you
-cannot quell your questions by then, they shall remain open between the jaws of
-time for eternity.
+### Mouse interaction
 
-Remember that he Lies. Hold your reason. Mine has been lost long ago.
+Users are able to move the vm's mouse relatively and absolutely, as well as
+click both its left and right buttons.
 
-> October 25, 2001
+To move the mouse to an *absolute* position, send `to x y`, where `x` and
+`y` are the x and y coordinates in pixels of the new position. (0, 0) is defined
+as the **bottom left** corner of the screen, as most people would expect.
 
+If either x or y is out of bounds for the vm's screen, the command fails.
+
+Users can also move the mouse relatively. To do so, send `move x y`, where
+x is how far (in pixels) to move the mouse right and y is how far (in pixels) to
+move the mouse up. If the mouse's new position would go out of the vm's screen,
+the command fails.
+
+The mouse can also be moved by specifying a direction and an amount of pixels. 
+Users can send `move left x`, `move right x`, `move down x`, or `move up x`,
+where `x` is the number of pixels to move. Negative numbers are not allowed
+here.
+
+If `move` is replaced with `drag` in any of the above commands, the mouse moves
+to its new location *while holding the left mouse button*.
+
+To left-click the vm's mouse, send `click` or `leftclick`. To right-click the
+vm's mouse, send `rightclick`.
+
+Scrolling the mouse is not supported. Users should use `pgup` and `pgdown`
+instead.
+
+### Command limitations
+
+Commands are limited to five per user per thirty seconds. This is handled by a
+global timer - when enough time passes on the timer, all users have their
+allowance of commands reset.
+
+If a user attempts to send a command after already exhausting their command
+allowance, the gatebot will scold them and will not process their command. If a
+user sends a multi-command message that exhausts their command allowance, NONE
+of their commands will be processed. For instance, if a user has two commands
+left and they send `ctrl+alt+del`, the gatebot will scold them and nothing will
+happen.
+
+The gatebot will only notify users of how many commands they have left when they
+send an command with an insufficient allowance OR they send the special
+`!commandsleft` command.
