@@ -36,8 +36,7 @@ Members.
 Users will interact with the Billy Gate through the `#gate-control` channel.
 Every message sent in this channel is interpreted as a command to the gatebot.
 
-Users are allowed five commands every thirty seconds. Each command is one of the
-following:
+Each command is one of the following:
 
 - Pressing a single key on the vm's keyboard
 - Moving the mouse to a space on the vm
@@ -48,15 +47,6 @@ unsuccessful command is sent, the gatebot will respond, citing the command that
 was attempted, the user that requested it, and why it failed. (Some reasons a
 command might fail are invalid syntax, insufficient command allowance, invalid
 arguments, etc.)
-
-### Command philosophy
-
-Commands should be intuitive and verbose. It should be obvious, or at least
-difficult to forget, how to invoke certain keys and use the mouse. Keep in mind
-we are targeting an audience that may not be technically sophisticated, so we do
-not rely on specific intuition that only savvy users may understand (like ^C for
-ctrl shortcuts, bot prefixes, etc). Thus, commands are kept prefix-less and in
-verbose English.
 
 ### Keyboard interaction
 
@@ -128,13 +118,12 @@ keys must be a *modifier* key, which is one of the following:
 - `windows` | `win`
 - `ctrl` | `control`
 
-The other keys must be standard keyboard keys, such as `a`, `0`, `.`, etc, OR
-click keywords, such as `click` and `rightclick` .
+The other keys must be standard keyboard keys, such as `a`, `0`, `.`, etc.
 
 We define a *combo query* as one of these complete lists. Some combo queries
-could be `ctrl+s` or `ctrl+shift+escape` or `z+alt` or even `ctrl+click`. When
+could be `ctrl+s` or `ctrl+shift+escape` or `z+alt`. When
 the gatebot recognizes a combo query, it interrupts typing mode. It then holds
-the given modifier key while pressing (or clicking) the other standard keys.
+the given modifier key while pressing the other standard keys.
 
 ### Mouse interaction
 
@@ -168,17 +157,4 @@ instead.
 
 ### Command limitations
 
-Commands are limited to five per user per thirty seconds. This is handled by a
-global timer - when enough time passes on the timer, all users have their
-allowance of commands reset.
-
-If a user attempts to send a command after already exhausting their command
-allowance, the gatebot will scold them and will not process their command. If a
-user sends a multi-command message that exhausts their command allowance, NONE
-of their commands will be processed. For instance, if a user has two commands
-left and they send `ctrl+alt+del`, the gatebot will scold them and nothing will
-happen.
-
-The gatebot will only notify users of how many commands they have left when they
-send an command with an insufficient allowance OR they send the special
-`!commandsleft` command.
+Currently unspecified.
