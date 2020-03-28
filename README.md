@@ -94,6 +94,8 @@ interaction:
 
 - `click` | `leftclick`
 - `rightclick`
+- `doubleclick` | `doubleleftclick`
+- `doublerightclick`
 - `to`
 - `move`
 - `drag`
@@ -150,7 +152,9 @@ If `move` is replaced with `drag` in any of the above commands, the mouse moves
 to its new location *while holding the left mouse button*.
 
 To left-click the vm's mouse, send `click` or `leftclick`. To right-click the
-vm's mouse, send `rightclick`.
+vm's mouse, send `rightclick`. Any of these mouse commands can be prefixed with
+`double` to perform a double-click. They can also just be typed twice, as in
+`click click` for a double left-click.
 
 Scrolling the mouse is not supported. Users should use `pgup` and `pgdown`
 instead.
@@ -158,3 +162,5 @@ instead.
 ### Command limitations
 
 Currently unspecified.
+
+### Resetting

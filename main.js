@@ -18,6 +18,15 @@ const ModifierKeys = [
     'shift'
 ];
 
+const MouseClicks = [
+    'click',
+    'leftclick',
+    'rightclick',
+    'doubleclick',
+    'doubleleftclick',
+    'doublerightclick'
+];
+
 const SpecialKeys = [
     'tab',
     'space',
@@ -37,10 +46,7 @@ const SpecialKeys = [
     'enter',
     'escape',
     'esc',
-    'click',
-    'leftclick',
-    'rightclick'
-].concat(ModifierKeys);
+].concat(ModifierKeys).concat(MouseClicks);
 
 const MotionKeywords = [
     'to',
@@ -91,10 +97,10 @@ const UnshiftForms = {
     '~': '`'
 }
 
-const originX = 64;
-const originY = 64;
-const vmWidth = 800;
-const vmHeight = 600;
+const originX = 64 + 1;
+const originY = 64 + 1;
+const vmWidth = 800 - 2;
+const vmHeight = 600 - 2;
 const commandAllowance = 5;
 const msAllowanceResetTime = 30000;
 const nameControlChannel = 'gate-control';
@@ -121,9 +127,10 @@ const execute = {
         standardKeys.forEach(kw => Robot.keyTap(kw, modifierKeys));
     },
     special: function(special) {
-        key = special.data.toLowerCase();
+        let key = special.data;
+
         if (!SpecialKeys.includes(key)) {
-            throw new Error('Something has gone horribly, horribly wrong.');
+            throw new Error('SOMETHING HAS GONE HORRIBLY, HORRIBLY WRONG.');
         }
 
         switch (key) {
@@ -134,6 +141,13 @@ const execute = {
           case 'rightclick':
             Robot.mouseClick('right');
             break;
+          case 'doubleclick':
+          case 'doubleleftclick':
+            Robot.mouseClick('left', true);
+            break;
+          case 'doublerightclick':
+            Robot.mouseClick('right', true);
+            break;
           default:
             Robot.keyTap(reduceKey(key));
             break;
@@ -143,8 +157,8 @@ const execute = {
         tokens = motion.data;
         tokens = tokens.filter(token => token != undefined);
         if (tokens.length < 3) {
-            throw new Error('Too few arguments to mouse move command. '
-                + `(${tokens.length})`);
+            throw new Error('TOO FEW ARGUMENTS TO MOVE COMMAND'
+                + ` (${tokens.length - 1} PROVIDED, NEED 2)`);
         }
 
         let x = parseInt(tokens[1], 10);
@@ -153,12 +167,12 @@ const execute = {
         let useDirection = DirectionKeywords.includes(tokens[1]);
         let useCoordinates = !isNaN(x);
         if (isNaN(y)) {
-            throw new Error(`Cannot move mouse by "${tokens[2]}" pixels.`);
+            throw new Error(`BAD ARGUMENTS TO MOVE COMMAND: `
+                + `${tokens[1]}, ${tokens[2]}`);
         }
 
         if (!(useDirection || useCoordinates)) {
-            throw new Error(`Bad argument ${tokens[1]} to mouse move `
-                + `command.`);
+            throw new Error(`BAD ARGUMENT TO MOVE COMMAND: ${tokens[1]}`);
         } else if (useDirection) {
             const amount = y;
             let curPos = Robot.getMousePos();
@@ -183,12 +197,14 @@ const execute = {
             }
             console.log(dest);
             if (!isInBounds(dest.x, dest.y)) {
-                throw new Error(`Cannot move to `
-                    + `(${dest.x - originX}, ${dest.y - originY}) `
-                    + ': Out of bounds.');
+                throw new Error(`POSITION `
+                    + `(${dest.x - originX}, ${vmHeight - (dest.y - originY)}) `
+                    + 'IS DISALLOWED: OUT OF BOUNDS');
             }
             if (tokens[0] === 'drag') {
+                Robot.mouseToggle('down');
                 Robot.dragMouse(dest.x, dest.y);
+                Robot.mouseToggle('up');
             } else {
                 Robot.moveMouse(dest.x, dest.y);
             }
@@ -207,9 +223,9 @@ const execute = {
                 break;
             } 
             if (!isInBounds(dest.x, dest.y)) {
-                throw new Error(`Cannot move to `
-                    + `(${dest.x - originX}, ${dest.y - originY}) `
-                    + ': Out of bounds.');
+                throw new Error(`POSITION `
+                    + `(${dest.x - originX}, ${vmHeight - (dest.y - originY)}) `
+                    + 'IS DISALLOWED: OUT OF BOUNDS.');
             }
             if (tokens[0] === 'drag') {
                 Robot.dragMouse(dest.x, dest.y);
@@ -280,7 +296,13 @@ function getGroups(message) {
             groups.push({ data: [token, tokens.shift(), tokens.shift()], 
                 type: 'motion' });
         } else if (isSpecialToken(token)) {
-            groups.push({ data: token, type: 'special' });
+            // If this and the next token are clicks, we need to send them both
+            // as a double click directive.
+            if (MouseClicks.includes(token) && token == tokens[1]) {
+                groups.push({ data: 'double' + token, type: 'special' });
+            } else { 
+                groups.push({ data: token, type: 'special' });
+            }
         } else {
             genericChain.push(token);
         }
@@ -306,13 +328,17 @@ function isSpecialToken(token) {
 }
 
 function isInBounds(x, y) {
+    console.log(`${x}, ${y}`);
     return x >= originX && y >= originY && 
         (x <= originX + vmWidth) && (y <= originY + vmHeight);
 }
 
 // Send a message notifying failure of a command.
 function notifyFailure(usCommand, dsUser, msg, dsChannel) {
-    dsChannel.send(`Error on \`${usCommand}\`: ${msg}`);
+    let user = dsUser.username.toUpperCase();
+    dsChannel.send(`\`FAILURE.\n` 
+        + `[${Date.now()}] INCORRECT DIRECTIVE FROM ${user}.\n`
+        + `[${Date.now()}] " ${usCommand} " : ${msg}\``);
 }
 
 client.once('ready', () => {
