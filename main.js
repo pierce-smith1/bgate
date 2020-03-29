@@ -301,20 +301,31 @@ function resetMachine() {
     canRecieveCommands = false;
 
     // Mouse the mouse into the powershell console and type the reset script.
-    Robot.moveMouse(1500, 0);
+    Robot.moveMouse(1500, 700);
+    Robot.mouseClick('left');
     for (let i = 0; i < gate.psResetCommand.length; i++) {
         Robot.keyTap(gate.psResetCommand.charAt(i));
     }
     Robot.keyTap('enter');
 
-    // After waiting 7 seconds for the script to finish, move the mouse to the
+    // After waiting 20 seconds for the script to finish, move the mouse to the
     // "Go Live" button, click, and then move the mouse to where we *hope to
     // god* the option for the VM window is.
     setTimeout(() => {
         Robot.moveMouse(245, 940);
-        Robot.moveMouse(350, 940);
-        canRecieveCommands = true;
-    }, 7 * 1000);
+	Robot.mouseClick('left');
+        setTimeout(() => {
+            Robot.moveMouse(350, 940);
+	    Robot.mouseClick('left');
+            setTimeout(() => {
+                Robot.moveMouse(600, 940);
+                Robot.mouseClick('left');
+                Robot.moveMouse(gate.originX + 10, gate.originY + 10);
+                Robot.mouseClick('left');
+                canRecieveCommands = true;
+            }, 1000);
+        }, 1000);
+    }, 20 * 1000);
 }
 
 client.once('ready', () => {
@@ -334,6 +345,7 @@ client.on('message', message => {
                 message.content, message.author, 
                 `THE GATE IS NOT ACCEPTING COMMANDS AT THIS TIME.`,
                 message.channel);
+            return;
         }
         try {
             handleMessage(message.content);
@@ -347,7 +359,8 @@ client.on('message', message => {
             if (Date.now() - lastResetRequestTime < gate.resetVoteCooldown) {
                 message.channel.send('`You cannot call another vote yet.`');
             } else {
-                startResetVote(message.channel);
+                resetMachine();
+                //startResetVote(message.channel);
             }
             message.delete().catch(console.error);
         }

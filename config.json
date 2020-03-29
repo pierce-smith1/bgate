@@ -37,7 +37,17 @@
         "pagedown",
         "enter",
         "escape",
-        "esc"
+        "esc",
+        "click",
+        "leftclick",
+        "rightclick",
+        "doubleclick",
+        "doubleleftclick",
+        "doublerightclick",
+        "control",
+        "command",
+        "alt",
+        "shift"
     ],
     "MotionKeywords": [
         "to",
