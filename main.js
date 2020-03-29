@@ -15,6 +15,7 @@ let commandsLeft = {};
 let lastInteraction = {};
 let participantTimers = {};
 let lastResetRequestTime = 0;
+let canRecieveCommands = true;
 
 // This object maps group types to functions that "execute" the command group
 // (carry out the commands).
@@ -249,8 +250,9 @@ function isSpecialToken(token) {
 
 function isInBounds(x, y) {
     console.log(`${x}, ${y}`);
-    return x >= gate.originX && y >= gate.originY && 
-        (x <= gate.originX + gate.vmWidth) && (y <= gate.originY + gate.vmHeight);
+    return x >= gate.originX && y >= gate.originY
+        && (x <= gate.originX + gate.vmWidth) 
+        && (y <= gate.originY + gate.vmHeight);
 }
 
 function updateParticipation(dsUser) {
@@ -278,19 +280,41 @@ function startResetVote(dsChannel) {
                 let yesCount = msg.reactions.cache.get('✔️').count;
                 let noCount = msg.reactions.cache.get('❌').count;
                 if (yesCount > noCount) {
+                    dsChannel.send('`Vote passed. Resetting machine.`');
                     resetMachine();
-                    dsChannel.send('Vote passed. Resetting machine.');
                 } else {
-                    dsChannel.send('Vote failed. Machine will not be reset.');
+                    dsChannel.send('`Vote failed. Machine will not be reset.`');
                 }
             }, gate.resetVoteTime);
+            setTimeout(() => {
+                dsChannel.send('`Vote is about to close.`');
+            }, gate.resetVoteTime * 0.8);
         })
         .catch(console.error);
     lastResetRequestTime = Date.now();
 }
 
+// J   N    C   T
+//   A   K    I   Y
 function resetMachine() {
     console.log('resetting...');
+    canRecieveCommands = false;
+
+    // Mouse the mouse into the powershell console and type the reset script.
+    Robot.moveMouse(1500, 0);
+    for (let i = 0; i < gate.psResetCommand.length; i++) {
+        Robot.keyTap(gate.psResetCommand.charAt(i));
+    }
+    Robot.keyTap('enter');
+
+    // After waiting 7 seconds for the script to finish, move the mouse to the
+    // "Go Live" button, click, and then move the mouse to where we *hope to
+    // god* the option for the VM window is.
+    setTimeout(() => {
+        Robot.moveMouse(245, 940);
+        Robot.moveMouse(350, 940);
+        canRecieveCommands = true;
+    }, 7 * 1000);
 }
 
 client.once('ready', () => {
@@ -305,6 +329,12 @@ client.on('message', message => {
 
     // Check for control messages 
     if (message.channel.name === gate.nameControlChannel) {
+        if (!canRecieveCommands) {
+            notifyFailure(
+                message.content, message.author, 
+                `THE GATE IS NOT ACCEPTING COMMANDS AT THIS TIME.`,
+                message.channel);
+        }
         try {
             handleMessage(message.content);
             updateParticipation(message.member);
@@ -314,7 +344,12 @@ client.on('message', message => {
         }
     } else if (message.channel.name === gate.nameResetChannel) {
         if (message.content === gate.resetKeyword) {
-            startResetVote(message.channel);
+            if (Date.now() - lastResetRequestTime < gate.resetVoteCooldown) {
+                message.channel.send('`You cannot call another vote yet.`');
+            } else {
+                startResetVote(message.channel);
+            }
+            message.delete().catch(console.error);
         }
     }
 });

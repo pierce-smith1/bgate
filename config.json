@@ -91,9 +91,11 @@
     "msAllowanceResetTime": 30000,
     "nameControlChannel": "gate-control",
     "nameResetChannel": "gate-reset",
-    "resetVoteTime": 5000,
+    "resetVoteTime": 60000,
+    "resetVoteCooldown": 300000,
     "resetVoteMessage": "```--/ RESET VOTE\n\nSomeone wants to reset the machine. You may vote by responding to this message.\n\nThe vote will expire in one minute. Once the time is up, votes will be tallied.\nIf there is a majority, the machine will be reset. Otherwise, it will not.\n\nRegardless of the result, there will be a five minute cooldown before another\nreset vote can be called.\n\nBegin.```",
     "resetKeyword": "__RESET",
     "participantRole": "693610555771977858",
-    "msParticipantRoleLifetime": 5000
+    "msParticipantRoleLifetime": 5000,
+    "psResetCommand": "./r.ps1" 
 }
