@@ -11,9 +11,11 @@ Jsonfile.readFile(cfgFile)
     .catch(error => console.error(error));
 
 // Dynamic structures
+// Yes, global variables, yada yada sue me etc.
 let commandsLeft = {};
 let lastInteraction = {};
 let participantTimers = {};
+let participants = [];
 let lastResetRequestTime = 0;
 let canRecieveCommands = true;
 
@@ -21,7 +23,7 @@ let canRecieveCommands = true;
 // (carry out the commands).
 // It is very much the heart and soul of the program.
 const execute = {
-    combo: function(combo) {
+    combo: function(combo, dsUser) {
         let keywords = combo.data.split('+');
         keywords = keywords.map(kw => kw.toLowerCase());
         keywords = keywords.map(kw => reduceKey(kw));
@@ -40,9 +42,12 @@ const execute = {
                 || gate.SpecialKeys.includes(kw);
         });
 
-        standardKeys.forEach(kw => Robot.keyTap(kw, modifierKeys));
+        standardKeys.forEach(kw => {
+            deductAllowance(dsUser, 1);
+            Robot.keyTap(kw, modifierKeys);
+        });
     },
-    special: function(special) {
+    special: function(special, dsUser) {
         let key = special.data;
 
         if (!gate.SpecialKeys.includes(key)) {
@@ -52,24 +57,29 @@ const execute = {
         switch (key) {
           case 'click':
           case 'leftclick':
+            deductAllowance(dsUser, 1);
             Robot.mouseClick('left');
             break;
           case 'rightclick':
+            deductAllowance(dsUser, 1);
             Robot.mouseClick('right');
             break;
           case 'doubleclick':
           case 'doubleleftclick':
+            deductAllowance(dsUser, 1);
             Robot.mouseClick('left', true);
             break;
           case 'doublerightclick':
+            deductAllowance(dsUser, 1);
             Robot.mouseClick('right', true);
             break;
           default:
+            deductAllowance(dsUser, 1);
             Robot.keyTap(reduceKey(key));
             break;
         }
     },
-    motion: function(motion) {
+    motion: function(motion, dsUser) {
         tokens = motion.data;
         tokens = tokens.filter(token => token != undefined);
         if (tokens.length < 3) {
@@ -119,10 +129,12 @@ const execute = {
                     + 'IS DISALLOWED: OUT OF BOUNDS');
             }
             if (tokens[0] === 'drag') {
+                deductAllowance(dsUser, 3);
                 Robot.mouseToggle('down');
                 Robot.dragMouse(dest.x, dest.y);
                 Robot.mouseToggle('up');
             } else {
+                deductAllowance(dsUser, 1);
                 Robot.moveMouse(dest.x, dest.y);
             }
         } else {
@@ -146,16 +158,17 @@ const execute = {
                     + 'IS DISALLOWED: OUT OF BOUNDS.');
             }
             if (tokens[0] === 'drag') {
+                deductAllowance(dsUser, 3);
                 Robot.mouseToggle('down');
                 Robot.dragMouse(dest.x, dest.y);
                 Robot.mouseToggle('up');
             } else {
+                deductAllowance(dsUser, 1);
                 Robot.moveMouse(dest.x, dest.y);
-
             }
         }
     },
-    generic: function(generic) {
+    generic: function(generic, dsUser) {
         string = generic.data.join(' ');
         for (let i = 0; i < string.length; i < i++) {
             key = string.charAt(i);
@@ -168,6 +181,7 @@ const execute = {
                 holdShift = true;
                 key = gate.UnshiftForms[key];
             }
+            deductAllowance(dsUser, 1);
             Robot.keyTap(key, holdShift ? ['shift'] : []);
         }
     }
@@ -185,8 +199,8 @@ function isShiftedSymbol(chr) {
     return gate.UnshiftForms[chr] != undefined;
 }
 
-function handleMessage(message) {
-    getGroups(message).forEach(group => execute[group.type](group));
+function handleMessage(message, dsUser) {
+    getGroups(message).forEach(group => execute[group.type](group, dsUser));
 }
 
 function getGroups(message) {
@@ -218,7 +232,9 @@ function getGroups(message) {
         } else if (isSpecialToken(token)) {
             // If this and the next token are clicks, we need to send them both
             // as a double click directive.
-            if (gate.MouseClicks.includes(token) && token == tokens[1]) {
+            // (The next token is tokens[0], since we popped off the first one
+            // at the top of the function).
+            if (gate.MouseClicks.includes(token) && token === tokens[0]) {
                 groups.push({ data: 'double' + token, type: 'special' });
             } else { 
                 groups.push({ data: token, type: 'special' });
@@ -256,23 +272,55 @@ function isInBounds(x, y) {
 }
 
 function updateParticipation(dsUser) {
+    log(`Updating participation for user ${dsUser.displayName}.`);
+
+    // If this user isn't already in the participants list...
+    if (!participants.some(u => u.id == dsUser.id)) {
+        participants.push(dsUser);
+        commandsLeft[dsUser.id] = gate.maxCommandAllowance;
+        log(`Added new user ${dsUser.displayName} to participants list.`);
+        log(`List is now:`);
+        participants.forEach(p => log(`${p.id} : ${p.displayName}`));
+    }
     dsUser.roles.add(gate.participantRole);
     lastInteraction[dsUser.id] = Date.now();
+
     clearTimeout(participantTimers[dsUser.id]);
     participantTimers[dsUser.id] = setTimeout(() => {
         dsUser.roles.remove(gate.participantRole);
+        log(`User ${dsUser.displayName} did not interact for 2 hrs: `
+            + `removed participant role.`);
+        participants = participants.filter(p => p.id != dsUser.id);
     }, gate.msParticipantRoleLifetime);
+}
+
+function addToAllAllowances(amount) {
+    participants.forEach(p => {
+        commandsLeft[p.id] += amount;
+        if (commandsLeft[p.id] > gate.maxCommandAllowance) {
+            commandsLeft[p.id] = gate.maxCommandAllowance;
+        }
+    });
+}
+
+function deductAllowance(dsUser, amount) {
+    if (commandsLeft[dsUser.id] - amount < 0) {
+        throw new Error(`You are inputting too many commands. `
+            + `Wait a few seconds.`);
+    }
+    commandsLeft[dsUser.id] -= amount;
 }
 
 // Send a message notifying failure of a command.
 function notifyFailure(usCommand, dsUser, msg, dsChannel) {
-    let username = dsUser.username.toUpperCase();
+    let username = dsUser.displayName.toUpperCase();
     dsChannel.send(`\`\`\`FAILURE.\n` 
         + `[${Date.now()}] INCORRECT DIRECTIVE FROM ${username}.\n`
         + `[${Date.now()}] " ${usCommand} " : ${msg}\`\`\``);
 }
 
 function startResetVote(dsChannel) {
+    log(`A reset vote was started.`);
     dsChannel.send(gate.resetVoteMessage)
         .then((msg) => { 
             Promise.all([ msg.react('✔️'), msg.react('❌') ]);
@@ -281,9 +329,13 @@ function startResetVote(dsChannel) {
                 let noCount = msg.reactions.cache.get('❌').count;
                 if (yesCount > noCount) {
                     dsChannel.send('`Vote passed. Resetting machine.`');
+                    log(`A reset vote passed with ${yesCount} for and `
+                        + `${noCount} against.`);
                     resetMachine();
                 } else {
                     dsChannel.send('`Vote failed. Machine will not be reset.`');
+                    log(`A reset vote failed with ${yesCount} for and `
+                        + `${noCount} against.`);
                 }
             }, gate.resetVoteTime);
             setTimeout(() => {
@@ -297,39 +349,55 @@ function startResetVote(dsChannel) {
 // J   N    C   T
 //   A   K    I   Y
 function resetMachine() {
-    console.log('resetting...');
+    log(`Machine is resetting...`);
     canRecieveCommands = false;
+    log(`Gatebot is no longer accepting commands.`);
 
     // Mouse the mouse into the powershell console and type the reset script.
     Robot.moveMouse(1500, 700);
+    log(`Attempted to move mouse to powershell prompt.`);
     Robot.mouseClick('left');
     for (let i = 0; i < gate.psResetCommand.length; i++) {
         Robot.keyTap(gate.psResetCommand.charAt(i));
     }
     Robot.keyTap('enter');
+    log(`Attempted to run reset script.`);
 
     // After waiting 20 seconds for the script to finish, move the mouse to the
     // "Go Live" button, click, and then move the mouse to where we *hope to
     // god* the option for the VM window is.
     setTimeout(() => {
         Robot.moveMouse(245, 940);
-	Robot.mouseClick('left');
+	    Robot.mouseClick('left');
+        log(`Attempted to click "go live" button.`);
         setTimeout(() => {
             Robot.moveMouse(350, 940);
-	    Robot.mouseClick('left');
+	        Robot.mouseClick('left');
+            log(`Attempted to choose VM for streaming.`);
             setTimeout(() => {
                 Robot.moveMouse(600, 940);
                 Robot.mouseClick('left');
+                log(`Attempted to click "start streaming" button.`);
                 Robot.moveMouse(gate.originX + 10, gate.originY + 10);
                 Robot.mouseClick('left');
                 canRecieveCommands = true;
+                log(`Attempted to refocus VM.`);
+                log(`Gatebot is now accepting commands.`);
             }, 1000);
         }, 1000);
     }, 20 * 1000);
 }
 
+function log(msg) {
+    console.log(`${new Date()} : ${msg}`);
+}
+
 client.once('ready', () => {
-    console.log(`Gate opened as ${client.user.tag}`);
+    log(`Gate opened as ${client.user.tag}`);
+
+    setInterval(() => {
+        addToAllAllowances(gate.commandAllowanceIncrement);
+    }, gate.msCommandAllowanceRefreshTime)
 });
 
 client.on('message', message => {
@@ -342,17 +410,24 @@ client.on('message', message => {
     if (message.channel.name === gate.nameControlChannel) {
         if (!canRecieveCommands) {
             notifyFailure(
-                message.content, message.author, 
+                message.content, message.member, 
                 `THE GATE IS NOT ACCEPTING COMMANDS AT THIS TIME.`,
                 message.channel);
+            log(`Recieved command ${message.content} when gatebot has commands`
+                + `disabled.`);
             return;
         }
         try {
-            handleMessage(message.content);
+            handleMessage(message.content, message.member);
             updateParticipation(message.member);
+            log(`Caught command from ${message.member.displayName}.`);
+            for (p in commandsLeft) {
+                log(`commandsLeft[${p}] = ${commandsLeft[p]}`);
+            }
         } catch (e) {
             notifyFailure(
-                message.content, message.author, e.message, message.channel);
+                message.content, message.member, e.message.toUpperCase(), 
+                message.channel);
         }
     } else if (message.channel.name === gate.nameResetChannel) {
         if (message.content === gate.resetKeyword) {
@@ -361,6 +436,9 @@ client.on('message', message => {
             } else {
                 startResetVote(message.channel);
             }
+            message.delete().catch(console.error);
+        } else {
+            message.channel.send('`Say "__RESET" to start a vote.`');
             message.delete().catch(console.error);
         }
     }

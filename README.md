@@ -167,7 +167,16 @@ instead.
 
 ### Command limitations
 
-Currently unspecified.
+The amount of commands a user can send is limited by time.
+
+A command includes any *atomic* action that influences the VM, including moving
+the mouse, clicking the mouse, or pressing a single key. For instance, `ctrl+z`
+is two commands, pressing `ctrl` and pressing `z`. `typing stuff` would be 12
+commands, one for each button pressed.
+
+Each user has a command allowance. The maximum amount of commands any user can
+have in their allowance is 30. Every second, 3 commands are added to every
+user's allowance. 
 
 ### Resetting
 
