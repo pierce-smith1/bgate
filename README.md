@@ -17,9 +17,9 @@ This virtual machine will be streamed by a separate account (a.k.a. the
 
 ## Discord Channels
 
-Three channels will be added to the server, each placed in a new category
-labelled `THE BILLY GATE`. These channels will be publicly accessible to all
-Members.
+Four channels will be added to the server, each placed in a new category
+labelled `THE BILLY GATE`. Three of these channels will be publicly accessible
+to all Members - one will be restricted to participants of the game.
 
 - #gate-chat: For discussion about the Gate. We provide this as a space for
   people to coordinate activities if they wish. The bot will NOT read messages
@@ -27,6 +27,8 @@ Members.
 - #gate-control: The channel by which the users can control the VM. **EVERY
   MESSAGE SENT IN THIS CHANNEL WILL BE INTERPRETED AS A COMMAND BY THE
   GATEBOT.** There is no prefix necessary to get the gatebot's attention.
+- #gate-reset: This channel is restricted to participants. In this channel,
+  participants can call and vote for a reset of the virtual machine.
 - The Gate: The voice channel through which the streamer will stream the virtual
   machine. Full voice chat and streaming capabilities will remain open to all
   users in the channel, but the streamer should not be muted.
@@ -47,6 +49,10 @@ unsuccessful command is sent, the gatebot will respond, citing the command that
 was attempted, the user that requested it, and why it failed. (Some reasons a
 command might fail are invalid syntax, insufficient command allowance, invalid
 arguments, etc.)
+
+After sending a command, whether it succeeded or failed, the user that sent it
+becomes a participant of the game. This grants them a special role. If they do
+not send another command within two hours, this participant role is removed.
 
 ### Keyboard interaction
 
@@ -164,3 +170,20 @@ instead.
 Currently unspecified.
 
 ### Resetting
+
+Users with the participant role (participants) gain access to a third text
+channel, `#gate-reset`. Through this channel, participants can call for a reset
+of the vm.
+
+To call for a reset, a user will type `__RESET`. The gatebot will then post a
+message with two reactions: a check (:heavy_check_mark:) and an x (:x:). Users
+will click on these reactions to vote. 
+
+The vote will last for a minute. If, after this minute, there are more positive
+votes than negative votes, the virtual machine will be reset.
+
+Regardless of whether the vote succeeds or fails, a five minute cooldown will be
+placed on calling another vote (i.e. another reset cannot be requested for
+another five minutes after the first reset vote ends).
+
+

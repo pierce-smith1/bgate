@@ -1,110 +1,24 @@
-
-let secret = require('./token.js');
+let Secret = require('./token.js');
 let Robot = require('robotjs');
 let Discord = require('discord.js');
+let Jsonfile = require('jsonfile');
 const client = new Discord.Client();
 
-const StandardKeys = [
-    '`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', 'q', 'w',
-    'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\\', 'a', 's', 'd', 'f',
-    'g', 'h', 'j', 'k', 'l', ';', '\'', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',',
-    '.', ' '
-];
+const cfgFile = './config.json';
+let gate = {};
+Jsonfile.readFile(cfgFile)
+    .then(obj => gate = obj)
+    .catch(error => console.error(error));
 
-const ModifierKeys = [
-    'control',
-    'command',
-    'alt',
-    'shift'
-];
+// Dynamic structures
+let commandsLeft = {};
+let lastInteraction = {};
+let participantTimers = {};
+let lastResetRequestTime = 0;
 
-const MouseClicks = [
-    'click',
-    'leftclick',
-    'rightclick',
-    'doubleclick',
-    'doubleleftclick',
-    'doublerightclick'
-];
-
-const SpecialKeys = [
-    'tab',
-    'space',
-    'left',
-    'right',
-    'down',
-    'up',
-    'del',
-    'delete',
-    'backspace',
-    'back',
-    'pgup',
-    'pageup',
-    'pgdn',
-    'pgdown',
-    'pagedown',
-    'enter',
-    'escape',
-    'esc',
-].concat(ModifierKeys).concat(MouseClicks);
-
-const MotionKeywords = [
-    'to',
-    'move',
-    'drag'
-];
-
-const DirectionKeywords = [
-    'left',
-    'right',
-    'up',
-    'down'
-];
-
-// A mapping of keywords and symbols to their robotjs compatible versions.
-const ReducedForms = {
-    win: 'command',
-    windows: 'command',
-    ctrl: 'control',
-    esc: 'escape',
-    pgup: 'pageup',
-    pgdn: 'pagedown',
-    pgdown: 'pagedown',
-    back: 'backspace',
-};
-
-const UnshiftForms = {
-    '!': '1',
-    '@': '2',
-    '#': '3',
-    '$': '4',
-    '%': '5',
-    '^': '6',
-    '&': '7',
-    '*': '8',
-    '(': '9',
-    ')': '0',
-    '_': '-',
-    '+': '=',
-    '{': '[',
-    '}': ']',
-    '|': '\\',
-    ':': ';',
-    '"': '\'',
-    '<': ',',
-    '>': '.',
-    '?': '/',
-    '~': '`'
-}
-
-const originX = 64 + 1;
-const originY = 64 + 1;
-const vmWidth = 800 - 2;
-const vmHeight = 600 - 2;
-const commandAllowance = 5;
-const msAllowanceResetTime = 30000;
-const nameControlChannel = 'gate-control';
-
+// This object maps group types to functions that "execute" the command group
+// (carry out the commands).
+// It is very much the heart and soul of the program.
 const execute = {
     combo: function(combo) {
         let keywords = combo.data.split('+');
@@ -112,16 +26,17 @@ const execute = {
         keywords = keywords.map(kw => reduceKey(kw));
 
         for (const kw of keywords) {
-            if (!(StandardKeys.includes(kw) || 
-                  SpecialKeys.includes(kw)  ||
-                  ModifierKeys.includes(kw))) {
+            if (!(gate.StandardKeys.includes(kw) || 
+                  gate.SpecialKeys.includes(kw)  ||
+                  gate.ModifierKeys.includes(kw))) {
                 throw new Error(`Attempted to press invalid key ${kw}.`);
             }
         }
 
-        modifierKeys = keywords.filter(kw => ModifierKeys.includes(kw));
+        modifierKeys = keywords.filter(kw => gate.ModifierKeys.includes(kw));
         standardKeys = keywords.filter(kw => {
-            return StandardKeys.includes(kw) || SpecialKeys.includes(kw);
+            return gate.StandardKeys.includes(kw) 
+                || gate.SpecialKeys.includes(kw);
         });
 
         standardKeys.forEach(kw => Robot.keyTap(kw, modifierKeys));
@@ -129,7 +44,7 @@ const execute = {
     special: function(special) {
         let key = special.data;
 
-        if (!SpecialKeys.includes(key)) {
+        if (!gate.SpecialKeys.includes(key)) {
             throw new Error('SOMETHING HAS GONE HORRIBLY, HORRIBLY WRONG.');
         }
 
@@ -164,7 +79,7 @@ const execute = {
         let x = parseInt(tokens[1], 10);
         let y = parseInt(tokens[2], 10);
 
-        let useDirection = DirectionKeywords.includes(tokens[1]);
+        let useDirection = gate.DirectionKeywords.includes(tokens[1]);
         let useCoordinates = !isNaN(x);
         if (isNaN(y)) {
             throw new Error(`BAD ARGUMENTS TO MOVE COMMAND: `
@@ -198,7 +113,8 @@ const execute = {
             console.log(dest);
             if (!isInBounds(dest.x, dest.y)) {
                 throw new Error(`POSITION `
-                    + `(${dest.x - originX}, ${vmHeight - (dest.y - originY)}) `
+                    + `(${dest.x - gate.originX}, `
+                    + `${gate.vmHeight - (dest.y - gate.originY)}) `
                     + 'IS DISALLOWED: OUT OF BOUNDS');
             }
             if (tokens[0] === 'drag') {
@@ -213,8 +129,8 @@ const execute = {
             let dest = {};
             switch (tokens[0]) {
               case 'to':
-                dest.x = originX + x;
-                dest.y = vmHeight + originY - y;
+                dest.x = gate.originX + x;
+                dest.y = gate.vmHeight + gate.originY - y;
                 break;
               case 'drag':
               case 'move':
@@ -224,11 +140,14 @@ const execute = {
             } 
             if (!isInBounds(dest.x, dest.y)) {
                 throw new Error(`POSITION `
-                    + `(${dest.x - originX}, ${vmHeight - (dest.y - originY)}) `
+                    + `(${dest.x - gate.originX},`
+                    + `${gate.vmHeight - (dest.y - gate.originY)}) `
                     + 'IS DISALLOWED: OUT OF BOUNDS.');
             }
             if (tokens[0] === 'drag') {
+                Robot.mouseToggle('down');
                 Robot.dragMouse(dest.x, dest.y);
+                Robot.mouseToggle('up');
             } else {
                 Robot.moveMouse(dest.x, dest.y);
 
@@ -246,7 +165,7 @@ const execute = {
             }
             if (isShiftedSymbol(key)) {
                 holdShift = true;
-                key = UnshiftForms[key];
+                key = gate.UnshiftForms[key];
             }
             Robot.keyTap(key, holdShift ? ['shift'] : []);
         }
@@ -255,14 +174,14 @@ const execute = {
 
 
 function reduceKey(word) {
-    if (ReducedForms[word] === undefined) {
+    if (gate.ReducedForms[word] === undefined) {
         return word;
     }
-    return ReducedForms[word];
+    return gate.ReducedForms[word];
 }
 
 function isShiftedSymbol(chr) {
-    return UnshiftForms[chr] != undefined;
+    return gate.UnshiftForms[chr] != undefined;
 }
 
 function handleMessage(message) {
@@ -274,7 +193,7 @@ function getGroups(message) {
     let tokens = message.split(" ");
     let genericChain = [];
 
-    if (tokens[0].toLowerCase() == "type") {
+    if (tokens[0].toLowerCase() == "type" && tokens.length > 1) {
         tokens.shift();
         return [{ data: tokens, type: 'generic' }];
     }
@@ -298,7 +217,7 @@ function getGroups(message) {
         } else if (isSpecialToken(token)) {
             // If this and the next token are clicks, we need to send them both
             // as a double click directive.
-            if (MouseClicks.includes(token) && token == tokens[1]) {
+            if (gate.MouseClicks.includes(token) && token == tokens[1]) {
                 groups.push({ data: 'double' + token, type: 'special' });
             } else { 
                 groups.push({ data: token, type: 'special' });
@@ -320,25 +239,58 @@ function isComboToken(token) {
 }
 
 function isMotionToken(token) {
-    return MotionKeywords.includes(token);
+    return gate.MotionKeywords.includes(token);
 }
 
 function isSpecialToken(token) {
-    return SpecialKeys.includes(token.toLowerCase()) && !token.startsWith('\\');
+    return gate.SpecialKeys.includes(token.toLowerCase()) 
+        && !token.startsWith('\\');
 }
 
 function isInBounds(x, y) {
     console.log(`${x}, ${y}`);
-    return x >= originX && y >= originY && 
-        (x <= originX + vmWidth) && (y <= originY + vmHeight);
+    return x >= gate.originX && y >= gate.originY && 
+        (x <= gate.originX + gate.vmWidth) && (y <= gate.originY + gate.vmHeight);
+}
+
+function updateParticipation(dsUser) {
+    dsUser.roles.add(gate.participantRole);
+    lastInteraction[dsUser.id] = Date.now();
+    clearTimeout(participantTimers[dsUser.id]);
+    participantTimers[dsUser.id] = setTimeout(() => {
+        dsUser.roles.remove(gate.participantRole);
+    }, gate.msParticipantRoleLifetime);
 }
 
 // Send a message notifying failure of a command.
 function notifyFailure(usCommand, dsUser, msg, dsChannel) {
-    let user = dsUser.username.toUpperCase();
-    dsChannel.send(`\`FAILURE.\n` 
-        + `[${Date.now()}] INCORRECT DIRECTIVE FROM ${user}.\n`
-        + `[${Date.now()}] " ${usCommand} " : ${msg}\``);
+    let username = dsUser.username.toUpperCase();
+    dsChannel.send(`\`\`\`FAILURE.\n` 
+        + `[${Date.now()}] INCORRECT DIRECTIVE FROM ${username}.\n`
+        + `[${Date.now()}] " ${usCommand} " : ${msg}\`\`\``);
+}
+
+function startResetVote(dsChannel) {
+    dsChannel.send(gate.resetVoteMessage)
+        .then((msg) => { 
+            Promise.all([ msg.react('✔️'), msg.react('❌') ]);
+            setTimeout(() => {
+                let yesCount = msg.reactions.cache.get('✔️').count;
+                let noCount = msg.reactions.cache.get('❌').count;
+                if (yesCount > noCount) {
+                    resetMachine();
+                    dsChannel.send('Vote passed. Resetting machine.');
+                } else {
+                    dsChannel.send('Vote failed. Machine will not be reset.');
+                }
+            }, gate.resetVoteTime);
+        })
+        .catch(console.error);
+    lastResetRequestTime = Date.now();
+}
+
+function resetMachine() {
+    console.log('resetting...');
 }
 
 client.once('ready', () => {
@@ -351,18 +303,21 @@ client.on('message', message => {
         return;
     }
 
-    // Must be in #gate-control
-    if (message.channel.name === nameControlChannel) {
+    // Check for control messages 
+    if (message.channel.name === gate.nameControlChannel) {
         try {
             handleMessage(message.content);
+            updateParticipation(message.member);
         } catch (e) {
             notifyFailure(
                 message.content, message.author, e.message, message.channel);
         }
-    } else {
-        log(`caught message not in ${nameControlChannel}; ignoring.`);
+    } else if (message.channel.name === gate.nameResetChannel) {
+        if (message.content === gate.resetKeyword) {
+            startResetVote(message.channel);
+        }
     }
 });
 
-client.login(secret.token);
+client.login(Secret.token);
 
