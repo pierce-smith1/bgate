@@ -359,8 +359,7 @@ client.on('message', message => {
             if (Date.now() - lastResetRequestTime < gate.resetVoteCooldown) {
                 message.channel.send('`You cannot call another vote yet.`');
             } else {
-                resetMachine();
-                //startResetVote(message.channel);
+                startResetVote(message.channel);
             }
             message.delete().catch(console.error);
         }
