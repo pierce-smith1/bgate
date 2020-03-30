@@ -47,7 +47,10 @@ const execute = {
         // This sends a ctrl+alt+del to the vm.
         if (modifierKeys[0] === 'alt', modifierKeys[1] === 'control', 
             standardKeys.includes('delete')) {
-            Robot.keyTap('f7', ['delete']);
+            deductAllowance(dsUser, 3);
+            Robot.keyToggle('f7', 'down');
+            Robot.keyTap('delete');
+            Robot.keyToggle('f7');
             return;
         }
         
