@@ -203,7 +203,6 @@ const execute = {
     }
 };
 
-
 function reduceKey(word) {
     if (gate.ReducedForms[word] === undefined) {
         return word;
@@ -307,6 +306,8 @@ function updateParticipation(dsUser) {
         log(`User ${dsUser.displayName} did not interact for 2 hrs: `
             + `removed participant role.`);
         participants = participants.filter(p => p.id != dsUser.id);
+        log(`List is now:`);
+        participants.forEach(p => log(`${p.id} : ${p.displayName}`));
     }, gate.msParticipantRoleLifetime);
 }
 
@@ -380,12 +381,9 @@ function resetMachine() {
     log(`Attempted to run reset script.`);
 
     setTimeout(() => {
-        Robot.moveMouse(245, 940);
+        Robot.moveMouse(270, 890);
 	    Robot.mouseClick('left');
         log(`Attempted to click "go live" button.`);
-        setTimeout(() => {
-            Robot.moveMouse(270, 890);
-            Robot.mouseClick();
     }, 20 * 1000);
 }
 
