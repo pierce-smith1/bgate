@@ -7,7 +7,7 @@ The Stratzenblitz Discord's official April Fools 2020 event.
 Users on the Stratzenblitz Discord, for 7 days starting at 4:00 am UTC on April
 1st, 2020, will gain access to a category of channels labelled `THE BILLY GATE`.
 Through these channels, users will be able to control a virtual machine running
-Windows XP SP2 (a.k.a the "vm") by inputting commands read by a bot (a.k.a the
+Windows XP SP2 (a.k.a. the "vm") by inputting commands read by a bot (a.k.a. the
 "gatebot"). Users will have full mouse and keyboard control of the machine
 through these commands, but they will be limited in the amount of commands they
 are able to input in a certain time frame.
@@ -31,7 +31,7 @@ to all Members - one will be restricted to participants of the game.
   participants can call and vote for a reset of the virtual machine.
 - The Gate: The voice channel through which the streamer will stream the virtual
   machine. Full voice chat and streaming capabilities will remain open to all
-  users in the channel, but the streamer should not be muted.
+  users in the channel.
 
 ## Interaction
 
@@ -131,7 +131,8 @@ The other keys must be standard keyboard keys, such as `a`, `0`, `.`, etc.
 We define a *combo query* as one of these complete lists. Some combo queries
 could be `ctrl+s` or `ctrl+shift+escape` or `z+alt`. When
 the gatebot recognizes a combo query, it interrupts typing mode. It then holds
-the given modifier key while pressing the other standard keys.
+the given modifier key while pressing the other standard keys, or if there are 
+no other standard keys, one of the modifier keys.
 
 ### Mouse interaction
 
@@ -175,8 +176,9 @@ is two commands, pressing `ctrl` and pressing `z`. `typing stuff` would be 12
 commands, one for each button pressed.
 
 Each user has a command allowance. The maximum amount of commands any user can
-have in their allowance is 30. Every second, 3 commands are added to every
-user's allowance. 
+have in their allowance is 30. Every second, 1 command is added to every
+user's allowance. If a user exceeds their allowance, their commands will not
+be processed until the allowance becomes non-zero again.
 
 ### Resetting
 
