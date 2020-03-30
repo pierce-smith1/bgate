@@ -413,7 +413,7 @@ client.on('message', message => {
                 message.content, message.member, 
                 `THE GATE IS NOT ACCEPTING COMMANDS AT THIS TIME.`,
                 message.channel);
-            log(`Recieved command ${message.content} when gatebot has commands`
+            log(`Recieved command ${message.content} when gatebot has commands `
                 + `disabled.`);
             return;
         }

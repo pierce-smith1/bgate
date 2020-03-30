@@ -93,9 +93,9 @@
         "?": "/",
         "~": "`"
     },
-    "originX": 65,
+    "originX": 66,
     "originY": 65,
-    "vmWidth": 798,
+    "vmWidth": 797,
     "vmHeight": 598,
     "maxCommandAllowance": 30,
     "commandAllowanceIncrement": 3,
