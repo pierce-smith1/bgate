@@ -86,6 +86,7 @@ Typing mode can be interrupted by one of the following special keywords:
 - `pgdn` | `pgdown` | `pagedown`
 - `enter`
 - `escape` | `esc`
+- `f1` - `f12` (excluding `f7`, for technical reasons)
 
 If one of these are encountered, the gatebot will press the corresponding key
 (i.e. the "escape" key for `esc`) instead of typing out the sequence of
