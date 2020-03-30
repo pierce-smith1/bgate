@@ -50,7 +50,7 @@ const execute = {
             deductAllowance(dsUser, 3);
             Robot.keyToggle('f7', 'down');
             Robot.keyTap('delete');
-            Robot.keyToggle('f7');
+            Robot.keyToggle('f7', 'up');
             return;
         }
         
