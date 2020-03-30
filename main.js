@@ -41,11 +41,15 @@ const execute = {
             return gate.StandardKeys.includes(kw) 
                 || gate.SpecialKeys.includes(kw);
         });
-
-        standardKeys.forEach(kw => {
-            deductAllowance(dsUser, 1);
-            Robot.keyTap(kw, modifierKeys);
-        });
+        
+        if (standardKeys.length != 0) {
+            standardKeys.forEach(kw => {
+                deductAllowance(dsUser, 1);
+                Robot.keyTap(kw, modifierKeys);
+            });
+        } else {
+            Robot.keyTap(modifierKeys[0], modifierKeys);
+        }
     },
     special: function(special, dsUser) {
         let key = special.data;
@@ -251,7 +255,7 @@ function getGroups(message) {
 }
 
 function isComboToken(token) {
-    const comboPattern = /^([a-z]+)(\+([a-z]+))+$/gi;
+    const comboPattern = /^([a-zA-Z0-9]+)(\+([a-zA-Z0-9]+))+$/gi;
     return comboPattern.test(token);
 }
 

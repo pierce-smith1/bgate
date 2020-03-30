@@ -47,7 +47,10 @@
         "control",
         "command",
         "alt",
-        "shift"
+        "shift",
+        "win",
+        "windows",
+        "ctrl"
     ],
     "MotionKeywords": [
         "to",
