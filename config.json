@@ -71,7 +71,8 @@
         "pgup": "pageup",
         "pgdn": "pagedown",
         "pgdown": "pagedown",
-        "back": "backspace"
+        "back": "backspace",
+        "del": "delete"
     },
     "UnshiftForms": {
         "!": "1",
