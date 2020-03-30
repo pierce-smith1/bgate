@@ -43,10 +43,10 @@ const execute = {
         });
 
         modifierKeys.sort();
-        // If we tried to press ctrl+alt+delete, send ctrl+del instead.
+        // If we tried to press ctrl+alt+delete, send f7+del instead.
         // This sends a ctrl+alt+del to the vm.
         if (modifierKeys[0] === 'alt', modifierKeys[1] === 'control', 
-            standardKeys[0] === 'delete') {
+            standardKeys.includes('delete')) {
             Robot.keyTap('f7', ['delete']);
             return;
         }
