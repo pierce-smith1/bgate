@@ -41,6 +41,15 @@ const execute = {
             return gate.StandardKeys.includes(kw) 
                 || gate.SpecialKeys.includes(kw);
         });
+
+        modifierKeys.sort();
+        // If we tried to press ctrl+alt+delete, send ctrl+del instead.
+        // This sends a ctrl+alt+del to the vm.
+        if (modifierKeys[0] === 'alt', modifierKeys[1] === 'control', 
+            modifierKeys[2] === 'delete') {
+            Robot.keyTap('command', ['delete']);
+            return;
+        }
         
         if (standardKeys.length != 0) {
             standardKeys.forEach(kw => {
