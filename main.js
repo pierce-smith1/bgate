@@ -379,28 +379,13 @@ function resetMachine() {
     Robot.keyTap('enter');
     log(`Attempted to run reset script.`);
 
-    // After waiting 20 seconds for the script to finish, move the mouse to the
-    // "Go Live" button, click, and then move the mouse to where we *hope to
-    // god* the option for the VM window is.
     setTimeout(() => {
         Robot.moveMouse(245, 940);
 	    Robot.mouseClick('left');
         log(`Attempted to click "go live" button.`);
         setTimeout(() => {
-            Robot.moveMouse(350, 940);
-	        Robot.mouseClick('left');
-            log(`Attempted to choose VM for streaming.`);
-            setTimeout(() => {
-                Robot.moveMouse(600, 940);
-                Robot.mouseClick('left');
-                log(`Attempted to click "start streaming" button.`);
-                Robot.moveMouse(gate.originX + 10, gate.originY + 10);
-                Robot.mouseClick('left');
-                canRecieveCommands = true;
-                log(`Attempted to refocus VM.`);
-                log(`Gatebot is now accepting commands.`);
-            }, 1000);
-        }, 1000);
+            Robot.moveMouse(270, 890);
+            Robot.mouseClick();
     }, 20 * 1000);
 }
 
