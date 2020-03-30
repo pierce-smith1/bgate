@@ -383,7 +383,17 @@ function resetMachine() {
     setTimeout(() => {
         Robot.moveMouse(270, 890);
 	    Robot.mouseClick('left');
-        log(`Attempted to click "go live" button.`);
+        log(`Attempted to click stream button.`);
+        setTimeout(() => {
+            Robot.moveMouse(600, 940);
+            Robot.mouseClick('left');
+            log(`Attempted to click "start streaming" button.`);
+            Robot.moveMouse(gate.originX + 10, gate.originY + 10);
+            Robot.mouseClick('left');
+            canRecieveCommands = true;
+            log(`Attempted to refocus VM.`);
+            log(`Gatebot is now accepting commands.`);
+        }, 500);
     }, 20 * 1000);
 }
 
