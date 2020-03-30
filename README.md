@@ -77,7 +77,6 @@ Typing mode can be interrupted by one of the following special keywords:
 - `right`
 - `down`
 - `up`
-- `windows` | `win` 
 - `ctrl` | `control`
 - `alt`
 - `shift`
@@ -123,34 +122,36 @@ keys must be a *modifier* key, which is one of the following:
 
 - `shift`
 - `alt`
-- `windows` | `win`
 - `ctrl` | `control`
 
 The other keys must be standard keyboard keys, such as `a`, `0`, `.`, etc.
+Note that you cannot press the windows key. This is intentional, since the
+windows key cannot be captured by virtual machines. It is a sad but necessary
+limitation.
 
 We define a *combo query* as one of these complete lists. Some combo queries
-could be `ctrl+s` or `ctrl+shift+escape` or `z+alt`. When
-the gatebot recognizes a combo query, it interrupts typing mode. It then holds
-the given modifier key while pressing the other standard keys, or if there are 
-no other standard keys, one of the modifier keys.
+could be `ctrl+s` or `ctrl+shift+escape` or `z+alt`. When the gatebot recognizes
+a combo query, it interrupts typing mode. It then holds the given modifier key
+while pressing the other standard keys, or if there are no other standard keys,
+one of the modifier keys.
 
 ### Mouse interaction
 
 Users are able to move the vm's mouse relatively and absolutely, as well as
 click both its left and right buttons.
 
-To move the mouse to an *absolute* position, send `to x y`, where `x` and
-`y` are the x and y coordinates in pixels of the new position. (0, 0) is defined
-as the **bottom left** corner of the screen, as most people would expect.
+To move the mouse to an *absolute* position, send `to x y`, where `x` and `y`
+are the x and y coordinates in pixels of the new position. (0, 0) is defined as
+the **bottom left** corner of the screen, as most people would expect.
 
 If either x or y is out of bounds for the vm's screen, the command fails.
 
-Users can also move the mouse relatively. To do so, send `move x y`, where
-x is how far (in pixels) to move the mouse right and y is how far (in pixels) to
-move the mouse up. If the mouse's new position would go out of the vm's screen,
-the command fails.
+Users can also move the mouse relatively. To do so, send `move x y`, where x is
+how far (in pixels) to move the mouse right and y is how far (in pixels) to move
+the mouse up. If the mouse's new position would go out of the vm's screen, the
+command fails.
 
-The mouse can also be moved by specifying a direction and an amount of pixels. 
+The mouse can also be moved by specifying a direction and an amount of pixels.
 Users can send `move left x`, `move right x`, `move down x`, or `move up x`,
 where `x` is the number of pixels to move. Negative numbers are not allowed
 here.
@@ -176,9 +177,9 @@ is two commands, pressing `ctrl` and pressing `z`. `typing stuff` would be 12
 commands, one for each button pressed.
 
 Each user has a command allowance. The maximum amount of commands any user can
-have in their allowance is 30. Every second, 1 command is added to every
-user's allowance. If a user exceeds their allowance, their commands will not
-be processed until the allowance becomes non-zero again.
+have in their allowance is 30. Every second, 1 command is added to every user's
+allowance. If a user exceeds their allowance, their commands will not be
+processed until the allowance becomes non-zero again.
 
 ### Resetting
 
