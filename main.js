@@ -268,7 +268,6 @@ function getGroups(message) {
     }
 
     if (genericChain.length > 0) {
-        if (groups.join(' ') > 
         groups.push({ data: genericChain, type: 'generic' });
     }
     return groups;
