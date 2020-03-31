@@ -15,7 +15,6 @@
     ],
     "ModifierKeys": [
         "control",
-        "command",
         "alt",
         "shift"
     ],
@@ -45,7 +44,6 @@
         "doubleleftclick",
         "doublerightclick",
         "control",
-        "command",
         "alt",
         "shift",
         "ctrl",
@@ -73,8 +71,6 @@
         "down"
     ],
     "ReducedForms": {
-        "win": "command",
-        "windows": "command",
         "ctrl": "control",
         "esc": "escape",
         "pgup": "pageup",

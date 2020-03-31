@@ -155,7 +155,8 @@ command fails.
 The mouse can also be moved by specifying a direction and an amount of pixels.
 Users can send `move left x`, `move right x`, `move down x`, or `move up x`,
 where `x` is the number of pixels to move. Negative numbers are not allowed
-here.
+here. Directions can also be shortened to a single letter, so `move l 50` is
+synonymous with `move left 50`
 
 If `move` is replaced with `drag` in any of the above commands, the mouse moves
 to its new location *while holding the left mouse button*.

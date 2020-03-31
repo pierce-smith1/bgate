@@ -121,18 +121,22 @@ const execute = {
             let dest = {};
             switch (tokens[1]) {
               case 'left':
+              case 'l':
                 dest.x = curPos.x - amount;
                 dest.y = curPos.y;
                 break;
               case 'right':
+              case 'r':
                 dest.x = curPos.x + amount;
                 dest.y = curPos.y
                 break;
               case 'up':
+              case 'u':
                 dest.x = curPos.x;
                 dest.y = curPos.y - amount;
                 break;
               case 'down':
+              case 'd':
                 dest.x = curPos.x;
                 dest.y = curPos.y + amount;
                 break;
@@ -186,6 +190,10 @@ const execute = {
     },
     generic: function(generic, dsUser) {
         string = generic.data.join(' ');
+        if (string.length > commandsLeft[dsUser.id]) {
+            throw new Error('Too long to type.');
+        }
+
         for (let i = 0; i < string.length; i < i++) {
             key = string.charAt(i);
             let holdShift = false;
@@ -260,6 +268,7 @@ function getGroups(message) {
     }
 
     if (genericChain.length > 0) {
+        if (groups.join(' ') > 
         groups.push({ data: genericChain, type: 'generic' });
     }
     return groups;
@@ -403,6 +412,8 @@ function log(msg) {
 
 client.once('ready', () => {
     log(`Gate opened as ${client.user.tag}`);
+    // For making sequential mouse commands not go too fast
+    Robot.setMouseDelay(400);
 
     setInterval(() => {
         addToAllAllowances(gate.commandAllowanceIncrement);
