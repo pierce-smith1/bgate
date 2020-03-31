@@ -466,7 +466,7 @@ client.on('message', message => {
     } else if (message.channel.name === gate.nameResetChannel) {
         if (message.content === gate.resetKeyword) {
             if (Date.now() - lastResetRequestTime < gate.resetVoteCooldown) {
-                message.channel.send('`You cannot call another vote yet.`');
+                message.channel.send('`You cannot call another vote yet.`')
                     .then((msg) => setTimeout(() => msg.delete(), 20000));
             } else {
                 startResetVote(message.channel);
