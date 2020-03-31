@@ -70,6 +70,7 @@ const execute = {
             throw new Error('SOMETHING HAS GONE HORRIBLY, HORRIBLY WRONG.');
         }
 
+        key = reduceKey(key);
         switch (key) {
           case 'click':
           case 'leftclick':
@@ -88,6 +89,10 @@ const execute = {
           case 'doublerightclick':
             deductAllowance(dsUser, 1);
             Robot.mouseClick('right', true);
+            break;
+          case 'command':
+            deductAllowance(dsUser, 1);
+            Robot.keyTap('esc', ['control']);
             break;
           default:
             deductAllowance(dsUser, 1);
@@ -407,6 +412,12 @@ function resetMachine() {
 
 function log(msg) {
     console.log(`${new Date()} : ${msg}`);
+}
+
+function sleep(ms) {
+    return new Promise(p => {
+        setTimeout(p, ms);
+    });
 }
 
 client.once('ready', () => {

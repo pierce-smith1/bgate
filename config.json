@@ -37,6 +37,8 @@
         "enter",
         "escape",
         "esc",
+        "win",
+        "windows",
         "click",
         "leftclick",
         "rightclick",
@@ -57,7 +59,8 @@
         "f9",
         "f10",
         "f11",
-        "f12"
+        "f12",
+        "wait"
     ],
     "MotionKeywords": [
         "to",
@@ -77,7 +80,9 @@
         "pgdn": "pagedown",
         "pgdown": "pagedown",
         "back": "backspace",
-        "del": "delete"
+        "del": "delete",
+        "win": "command",
+        "windows": "command"
     },
     "UnshiftForms": {
         "!": "1",
