@@ -358,19 +358,22 @@ function startResetVote(dsChannel) {
                 let yesCount = msg.reactions.cache.get('✔️').count;
                 let noCount = msg.reactions.cache.get('❌').count;
                 if (yesCount > noCount) {
-                    dsChannel.send('`Vote passed. Resetting machine.`');
+                    dsChannel.send('`Vote passed. Resetting machine.`')
+                        .then((msg) => setTimeout(() => msg.delete(), 20000));
                     log(`A reset vote passed with ${yesCount} for and `
                         + `${noCount} against.`);
                     resetMachine();
                 } else {
-                    dsChannel.send('`Vote failed. Machine will not be reset.`');
+                    dsChannel.send('`Vote failed. Machine will not be reset.`')
+                        .then((msg) => setTimeout(() => msg.delete(), 20000));
                     log(`A reset vote failed with ${yesCount} for and `
                         + `${noCount} against.`);
                 }
             }, gate.resetVoteTime);
             setTimeout(() => msg.delete(), gate.resetVoteTime);
             setTimeout(() => {
-                dsChannel.send('`Vote is about to close.`');
+                dsChannel.send('`Vote is about to close.`')
+                    .then((msg) => setTimeout(() => msg.delete(), 20000));
             }, gate.resetVoteTime * 0.8);
         })
         .catch(console.error);
@@ -464,6 +467,7 @@ client.on('message', message => {
         if (message.content === gate.resetKeyword) {
             if (Date.now() - lastResetRequestTime < gate.resetVoteCooldown) {
                 message.channel.send('`You cannot call another vote yet.`');
+                    .then((msg) => setTimeout(() => msg.delete(), 20000));
             } else {
                 startResetVote(message.channel);
             }
