@@ -368,6 +368,7 @@ function startResetVote(dsChannel) {
                         + `${noCount} against.`);
                 }
             }, gate.resetVoteTime);
+            setTimeout(() => msg.delete(), gate.resetVoteTime);
             setTimeout(() => {
                 dsChannel.send('`Vote is about to close.`');
             }, gate.resetVoteTime * 0.8);
