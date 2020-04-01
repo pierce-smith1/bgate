@@ -92,7 +92,7 @@ const execute = {
             break;
           case 'command':
             deductAllowance(dsUser, 1);
-            Robot.keyTap('esc', ['control']);
+            Robot.keyTap('escape', ['control']);
             break;
           default:
             deductAllowance(dsUser, 1);
