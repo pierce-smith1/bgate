@@ -411,7 +411,7 @@ function resetMachine() {
             log(`Attempted to refocus VM.`);
             log(`Gatebot is now accepting commands.`);
         }, 500);
-    }, 20 * 1000);
+    }, 40 * 1000);
 }
 
 function log(msg) {
