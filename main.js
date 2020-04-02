@@ -64,7 +64,7 @@ const execute = {
         }
     },
     special: function(special, dsUser) {
-        let key = special.data;
+        let key = special.data.toLowerCase();
 
         if (!gate.SpecialKeys.includes(key)) {
             throw new Error('SOMETHING HAS GONE HORRIBLY, HORRIBLY WRONG.');

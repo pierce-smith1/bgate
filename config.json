@@ -60,8 +60,7 @@
         "f9",
         "f10",
         "f11",
-        "f12",
-        "wait"
+        "f12"
     ],
     "MotionKeywords": [
         "to",
@@ -127,6 +126,6 @@
     "resetVoteMessage": "```--/ RESET VOTE\n\nSomeone wants to reset the machine. You may vote by reacting to this message.\n\nThe vote will expire in one minute. Once the time is up, votes will be tallied.\nIf there is a majority, the machine will be reset. Otherwise, it will not.\n\nRegardless of the result, there will be a five minute cooldown before another\nreset vote can be called.\n\nBegin.```",
     "resetKeyword": "__RESET",
     "participantRole": "693897746121490473",
-    "msParticipantRoleLifetime": 720000,
+    "msParticipantRoleLifetime": 7200000,
     "psResetCommand": "./r.ps1" 
 }
